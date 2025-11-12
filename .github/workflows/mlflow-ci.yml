@@ -30,7 +30,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r MLProject/requirements.txt
+          pip install pandas numpy scikit-learn "mlflow<3"
 
       # 5️⃣ Run training script
       - name: Run training script
