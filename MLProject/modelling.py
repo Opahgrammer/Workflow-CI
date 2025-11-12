@@ -9,12 +9,15 @@ from sklearn.preprocessing import LabelEncoder
 import json
 
 def main():
-    # Pastikan MLflow menyimpan log di folder lokal (bukan drive Windows)
+    # 🔧 Pastikan MLflow menyimpan tracking di folder lokal (bukan D:\)
     os.makedirs("mlruns", exist_ok=True)
-    mlflow.set_tracking_uri("file:./mlruns")  
+    mlflow.set_tracking_uri("file:./mlruns")
 
     # 1. Load dataset
-    data = pd.read_csv("heart_disease_uci_preprocessing.csv")
+    data_path = "heart_disease_uci_preprocessing.csv"
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Dataset tidak ditemukan: {data_path}")
+    data = pd.read_csv(data_path)
 
     # 2. Pastikan kolom target 'num' ada
     if "num" not in data.columns:
@@ -38,7 +41,7 @@ def main():
         X, y, test_size=0.2, random_state=42
     )
 
-    # 7. Mulai MLflow run
+    # 7. Jalankan MLflow experiment
     mlflow.set_experiment("CI-Auto-Retrain-Model")
 
     with mlflow.start_run() as run:
