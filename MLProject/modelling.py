@@ -1,3 +1,4 @@
+import os
 import mlflow
 import mlflow.sklearn
 import pandas as pd
@@ -8,6 +9,10 @@ from sklearn.preprocessing import LabelEncoder
 import json
 
 def main():
+    # Pastikan MLflow menyimpan log di folder lokal (bukan drive Windows)
+    os.makedirs("mlruns", exist_ok=True)
+    mlflow.set_tracking_uri("file:./mlruns")  
+
     # 1. Load dataset
     data = pd.read_csv("heart_disease_uci_preprocessing.csv")
 
@@ -35,6 +40,7 @@ def main():
 
     # 7. Mulai MLflow run
     mlflow.set_experiment("CI-Auto-Retrain-Model")
+
     with mlflow.start_run() as run:
         mlflow.sklearn.autolog()
         model = RandomForestClassifier(n_estimators=100, random_state=42)
