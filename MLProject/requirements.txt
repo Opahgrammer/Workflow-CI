@@ -1,0 +1,4 @@
+mlflow<3
+numpy
+pandas
+scikit-learn
