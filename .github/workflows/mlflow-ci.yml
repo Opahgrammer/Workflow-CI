@@ -39,10 +39,9 @@ jobs:
         working-directory: MLProject
         run: |
           echo "🔍 Searching for latest MLflow run..."
-          echo "📂 Checking mlruns structure..."
+          echo "📂 Listing mlruns content..."
           ls -R mlruns || echo "⚠️ mlruns folder not found"
 
-          # FIXED: detect any experiment ID (not just 0)
           RUN_PATH=$(find mlruns -mindepth 2 -maxdepth 2 -type d | sort -r | head -1)
 
           if [ -z "$RUN_PATH" ]; then
@@ -50,8 +49,8 @@ jobs:
             exit 1
           fi
 
+          EXP_ID=$(basename "$(dirname "$RUN_PATH")")
           RUN_ID=$(basename "$RUN_PATH")
-          EXP_ID=$(basename $(dirname "$RUN_PATH"))
 
           echo "✅ Found experiment ID: $EXP_ID"
           echo "✅ Found run ID: $RUN_ID"
@@ -68,7 +67,7 @@ jobs:
         working-directory: MLProject
         run: |
           echo "🐳 Building Docker image from MLflow model..."
-          mlflow models build-docker -m "runs:/${{ steps.get_run.outputs.exp_id }}/${{ steps.get_run.outputs.run_id }}/model" -n heart-disease-mlflow --enable-mlserver
+          mlflow models build-docker -m "runs:/${{ steps.get_run.outputs.run_id }}/model" -n heart-disease-mlflow --enable-mlserver
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
