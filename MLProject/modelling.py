@@ -8,10 +8,9 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import LabelEncoder
 
-
 def main():
     # ======================================================
-    # 🔧 1. Setup MLflow lokal (agar tidak error di Ubuntu runner)
+    # 🔧 1. Setup MLflow tracking lokal
     # ======================================================
     tracking_dir = os.path.join(os.getcwd(), "mlruns")
     os.makedirs(tracking_dir, exist_ok=True)
@@ -27,15 +26,13 @@ def main():
     data = pd.read_csv(data_path)
 
     # ======================================================
-    # 🧩 3. Validasi dan preprocessing
+    # 🧩 3. Preprocessing
     # ======================================================
     if "num" not in data.columns:
         raise ValueError("Kolom target 'num' tidak ditemukan di dataset!")
 
-    # Ubah kolom target jadi binary (1 = sakit, 0 = sehat)
     data["num"] = data["num"].apply(lambda x: 1 if x > 0 else 0)
 
-    # Konversi kolom bertipe object menjadi angka
     for col in data.columns:
         if data[col].dtype == "object":
             le = LabelEncoder()
@@ -52,18 +49,16 @@ def main():
     )
 
     # ======================================================
-    # 🚀 5. Jalankan MLflow experiment
+    # 🚀 5. MLflow experiment
     # ======================================================
     mlflow.set_experiment("CI-Auto-Retrain-Model")
 
     with mlflow.start_run() as run:
         mlflow.sklearn.autolog()
 
-        # Buat dan latih model
         model = RandomForestClassifier(n_estimators=100, random_state=42)
         model.fit(X_train, y_train)
 
-        # Evaluasi
         preds = model.predict(X_test)
         acc = accuracy_score(y_test, preds)
 
@@ -71,10 +66,11 @@ def main():
         mlflow.log_metric("accuracy", acc)
         mlflow.sklearn.log_model(model, artifact_path="model")
 
-        # Simpan info run untuk pipeline CI/CD
+        # Simpan informasi run
         run_info = {
             "run_id": run.info.run_id,
             "experiment_id": run.info.experiment_id,
+            "model_path": f"mlruns/{run.info.experiment_id}/{run.info.run_id}/artifacts/model"
         }
 
         with open("latest_run.json", "w") as f:
@@ -86,7 +82,6 @@ def main():
         print(f"🧠 Run ID: {run.info.run_id}")
         print(f"🧪 Experiment ID: {run.info.experiment_id}")
         print("==============================\n")
-
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,5 @@
 {
-    "run_id": "727267ac361f42de88aea1a2b7503f4d",
-    "experiment_id": "819243925789535272"
+    "run_id": "a56431663fe74bcca21825cfbeccda43",
+    "experiment_id": "950247365314685437",
+    "model_path": "mlruns/950247365314685437/a56431663fe74bcca21825cfbeccda43/artifacts/model"
 }
