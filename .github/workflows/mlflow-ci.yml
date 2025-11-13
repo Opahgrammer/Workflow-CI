@@ -79,6 +79,7 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+          logout: false
 
       # 🔟 Push image ke Docker Hub
       - name: Push Docker image
