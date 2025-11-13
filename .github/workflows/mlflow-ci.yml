@@ -39,7 +39,7 @@ jobs:
           echo "🚀 Running model training..."
           python modelling.py
 
-      # 6️⃣ Ambil run_id dan experiment_id dari latest_run.json
+      # 6️⃣ Ambil run_id dan experiment_id
       - name: Get latest MLflow run info
         id: get_run
         working-directory: MLProject
@@ -55,18 +55,23 @@ jobs:
           echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
           echo "exp_id=$EXP_ID" >> $GITHUB_OUTPUT
 
-      # 7️⃣ Install Maven (dibutuhkan untuk mlflow docker)
+      # 7️⃣ Install Maven (dibutuhkan oleh MLflow untuk Java dependencies)
       - name: Install Maven
         run: |
           sudo apt-get update
           sudo apt-get install -y maven
 
       # 8️⃣ Build Docker image dari model MLflow
-      - name: Build Docker image from MLflow model
+      - name: Build Docker image from MLflow model (fix Python version)
         working-directory: MLProject
+        env:
+          MLFLOW_DOCKER_BASE_IMAGE: python:3.10-slim
         run: |
-          echo "🐳 Building Docker image from MLflow model..."
-          mlflow models build-docker -m "runs:/${{ steps.get_run.outputs.run_id }}/model" -n heart-disease-mlflow --enable-mlserver
+          echo "🐳 Building Docker image from MLflow model using Python 3.10 base image..."
+          mlflow models build-docker -m "runs:/${{ steps.get_run.outputs.run_id }}/model" \
+            -n heart-disease-mlflow \
+            --enable-mlserver \
+            --env-manager local
 
       # 9️⃣ Login ke Docker Hub
       - name: Log in to Docker Hub
@@ -81,7 +86,7 @@ jobs:
           docker tag heart-disease-mlflow:latest ${{ secrets.DOCKERHUB_USERNAME }}/heart-disease-mlflow:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/heart-disease-mlflow:latest
 
-      # 11️⃣ Upload artifact mlruns (opsional, untuk debugging)
+      # 11️⃣ Upload artifact mlruns (opsional)
       - name: Upload MLflow model artifacts
         uses: actions/upload-artifact@v4
         with:
